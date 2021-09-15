@@ -1,22 +1,9 @@
 ﻿using UnityEngine.Rendering;
 using UnityEngine;
-using Unity.Collections;
 using Unity.Mathematics;
-
-[System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
-public struct Vertex
-{
-	public float3 Position;
-	public float3 Normal;
-	public float4 Tangent;
-	public Color32 Color;
-	public float2 UVs;
-}
 
 public class PlaneMeshGenerator
 {
-	private static readonly float3 upVector = new float3(0, 1, 0);
-
 	public static void CalculateMeshTangents(Mesh mesh)
 	{
 		//speed up math by copying the mesh arrays
@@ -159,78 +146,4 @@ public class PlaneMeshGenerator
 		new VertexAttributeDescriptor(VertexAttribute.Color, VertexAttributeFormat.UNorm8, 4),
 		new VertexAttributeDescriptor(VertexAttribute.TexCoord0, VertexAttributeFormat.Float32, 2)
 	};
-
-	public static Mesh PlaneTest(float size, int segmentsCount)
-	{
-		var mesh = new Mesh();
-		mesh.Clear();
-
-		float length = size;
-		float width = size;
-		int resX = segmentsCount;
-		int resZ = segmentsCount;
-		int nbFaces = (resX - 1) * (resZ - 1);
-
-		var verticesNumber = resX * resZ;
-		var indicesNumber = nbFaces * 6;
-		mesh.SetVertexBufferParams(verticesNumber, attributeDescriptors);
-		mesh.SetIndexBufferParams(indicesNumber, IndexFormat.UInt32);
-
-		// set vertex data
-		var vertices = new NativeArray<Vertex>(verticesNumber, Allocator.Temp);
-		var triangles = new NativeArray<int>(indicesNumber, Allocator.Temp);
-
-		// fill in vertex array data here
-		for (int i = 0; i < verticesNumber; i++)
-		{
-			var vertex = vertices[i];
-
-			var indexX = i % resX;
-			var indexZ = i / resZ;
-
-			float zPos = ((float)indexZ / (resZ - 1) - .5f) * length;
-			float xPos = ((float)indexX / (resX - 1) - .5f) * width;
-			vertex.Position = new float3(xPos, 0, zPos);
-
-			vertex.Normal = upVector;
-
-			//vertex.Tangent = new float4(0);
-
-			//vertex.Color = new Color32();
-
-			vertex.UVs = new float2((float)indexX / (resX - 1), (float)indexZ / (resZ - 1));
-
-			vertices[i] = vertex;
-		}
-
-		for (int face = 0, t = 0; face < nbFaces; face++)
-		{
-			// Retrieve lower left corner from face ind
-			int i = face % (resX - 1) + (face / (resZ - 1) * resX);
-
-			triangles[t++] = i + resX;
-			triangles[t++] = i + 1;
-			triangles[t++] = i;
-
-			triangles[t++] = i + resX;
-			triangles[t++] = i + resX + 1;
-			triangles[t++] = i + 1;
-		}
-
-		mesh.SetVertexBufferData(vertices, 0, 0, verticesNumber, 0, MeshUpdateFlags.DontRecalculateBounds);
-		mesh.SetIndexBufferData(triangles, 0, 0, indicesNumber, MeshUpdateFlags.DontRecalculateBounds);
-
-		mesh.subMeshCount = 1;
-		mesh.SetSubMesh(0, new SubMeshDescriptor(0, indicesNumber, MeshTopology.Triangles), MeshUpdateFlags.DontRecalculateBounds);
-
-		mesh.RecalculateBounds();
-		mesh.RecalculateNormals();
-		mesh.RecalculateTangents();
-
-		// Release resources
-		vertices.Dispose();
-		triangles.Dispose();
-
-		return mesh;
-	}
 }
