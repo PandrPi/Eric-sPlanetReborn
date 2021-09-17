@@ -11,7 +11,8 @@ public class ChunkGenerationPool : MonoBehaviour
 {
 	public static ChunkGenerationPool Instance { get; private set; }
 
-	[SerializeField, Range(2, 250)] private int maxChunkMeshResolution; 
+	[SerializeField, Range(2, 250)] private int maxChunkMeshResolution;
+	[SerializeField] private bool completeImmediately;
 	[SerializeField] private ValueDerivativeNoise valueDerivativeNoise;
 	[SerializeField] private SimplexNoise simplexNoise;
 	[SerializeField] private RidgedNoise ridgedNoise;
@@ -43,6 +44,10 @@ public class ChunkGenerationPool : MonoBehaviour
 				currentJobHandle = StartChunkGeneration(currentChunkData);
 				// Mark generation slot as unavailable
 				generationSlot.IsFree = false;
+
+				// Check whether we want to complete all the jobs immediately. This will freeze the main thread
+				// for as long as the chunk is generated, so we can see some peaks at the frame time graph in the Profiler.
+				if (completeImmediately == true) CompleteChunkGeneration();
 			}
 		}
 		else
@@ -50,16 +55,24 @@ public class ChunkGenerationPool : MonoBehaviour
 			// Here we can ckeck whether our currentJobHandle is completed
 			if (currentJobHandle.IsCompleted == true)
 			{
-				// Our generation jobs is completed but we have to manually call the Complete method
-				currentJobHandle.Complete();
-				AssignMeshData();
-
-				// Mark the generation slot as free
-				generationSlot.IsFree = true;
-				// Remove reference to the current ChunkData object
-				currentChunkData = null;
+				CompleteChunkGeneration();
 			}
 		}
+	}
+
+	/// <summary>
+	/// Completes the current chunk generation jobs
+	/// </summary>
+	public void CompleteChunkGeneration()
+	{
+		// Our generation jobs is completed but we have to manually call the Complete method
+		currentJobHandle.Complete();
+		AssignMeshData();
+
+		// Mark the generation slot as free
+		generationSlot.IsFree = true;
+		// Remove reference to the current ChunkData object
+		currentChunkData = null;
 	}
 
 	/// <summary>
@@ -93,7 +106,8 @@ public class ChunkGenerationPool : MonoBehaviour
 		var chunkToPlanet = planetTRS.inverse * chunkTRS;
 		var planetToChunk = chunkTRS.inverse * planetTRS;
 
-		// Schedule the jobs
+		// Schedule the jobs. All the jobs depends on each other so when the last job will be completed we can surely
+		// say that all the previous jobs will be completed too.
 		var job1 = new VerticesAndUVsGenerationJob()
 		{
 			Vertices = generationSlot.Vertices,
@@ -109,6 +123,9 @@ public class ChunkGenerationPool : MonoBehaviour
 			SimplexNoise = simplexNoise,
 			RidgedNoise = ridgedNoise,
 		};
+
+		//job1.Execute(0);
+		//job1.Execute(1);
 
 		var jobHandle1 = job1.Schedule(verticesNumber, batchCount);
 
@@ -154,6 +171,7 @@ public class ChunkGenerationPool : MonoBehaviour
 
 		// Assign the generated data to the mesh
 		mesh.SetVertices(generationSlot.Vertices, 0, verticesNumber);
+		mesh.SetColors(generationSlot.Colors, 0, verticesNumber);
 		mesh.SetUVs(0, generationSlot.UVs, 0, verticesNumber);
 		mesh.SetIndices(generationSlot.Triangles, 0, trianglesNumber, MeshTopology.Triangles, 0, false);
 		mesh.SetNormals(generationSlot.Normals, 0, verticesNumber);
@@ -181,6 +199,7 @@ public class ChunkGenerationSlot : System.IDisposable
 {
 	public bool IsFree { get; set; }
 	public NativeArray<float3> Vertices { get; private set; }
+	public NativeArray<float4> Colors { get; private set; }
 	public NativeArray<float3> Normals { get; private set; }
 	public NativeArray<float4> Tangents { get; private set; }
 	public NativeArray<float2> UVs { get; private set; }
@@ -204,6 +223,7 @@ public class ChunkGenerationSlot : System.IDisposable
 	private void AllocateNativeArrays(int verticesNumber, int trianglesNumber)
 	{
 		Vertices = new NativeArray<float3>(verticesNumber, Allocator.Persistent);
+		Colors = new NativeArray<float4>(verticesNumber, Allocator.Persistent);
 		Normals = new NativeArray<float3>(verticesNumber, Allocator.Persistent);
 		Tangents = new NativeArray<float4>(verticesNumber, Allocator.Persistent);
 		UVs = new NativeArray<float2>(verticesNumber, Allocator.Persistent);
@@ -228,6 +248,7 @@ public class ChunkGenerationSlot : System.IDisposable
 	{
 		// Release resources
 		Vertices.Dispose();
+		Colors.Dispose();
 		Normals.Dispose();
 		Tangents.Dispose();
 		UVs.Dispose();

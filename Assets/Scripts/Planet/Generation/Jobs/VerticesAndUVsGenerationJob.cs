@@ -35,10 +35,10 @@ namespace Planet.Generation.Jobs
 			float xPos = ((float)indexX / (MeshResolution - 1) - .5f) * MeshSize;
 			var sourceVertex = new float4(xPos, 0, zPos, 1.0f);
 
-
+			// Convert sourceVertex to a planetary space
 			float4 newVertex = math.mul(ChunkToPlanet, sourceVertex);
 
-			//float noise = valueDerivativeNoise.GetValueD(newVertex.xyz).x;
+			//float noise = ValueDerivativeNoise.GetValueD(newVertex.xyz).x;
 			//float noise = SimplexNoise.GetValue(newVertex.xyz);
 			float noise = RidgedNoise.GetValue(newVertex.xyz);
 			//float noise = DomainWrapping(newVertex.xyz);

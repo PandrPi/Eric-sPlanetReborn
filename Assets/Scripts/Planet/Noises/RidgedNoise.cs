@@ -51,7 +51,7 @@ namespace Planet.Noises
 			for (int i = 0; i < octaves; i++)
 			{
 				// Compute the noise value for the x vectore
-				float n = 1.0f - math.abs(noise.snoise(x * frequency));
+				float n = 1.0f - math.abs(noise.cnoise(x * frequency));
 				n *= n;
 				n *= weight;
 				weight = n;

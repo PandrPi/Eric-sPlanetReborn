@@ -49,8 +49,8 @@ namespace Planet.Noises
 			// Loop throught the octaves
 			for (int i = 0; i < octaves; i++)
 			{
-				// Compute the noise value for the x vectore
-				float n = noise.snoise(x * frequency);
+				// Compute the noise value for the x vector
+				float n = noise.cnoise(x * frequency);
 				// Apply the amplitude modifier to the computed noise value and add it to the result value
 				value += n * amplitude;
 				// Apply lacunarity and amplitude gain

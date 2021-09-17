@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Chunk : MonoBehaviour
 {
@@ -8,8 +6,19 @@ public class Chunk : MonoBehaviour
 
     void Start()
     {
-		chunkData.mesh = new Mesh();
+		InitializeChunkData();
     }
+
+	private void InitializeChunkData()
+	{
+		chunkData.mesh = new Mesh();
+		chunkData.chunkTRS = transform;
+		//chunkData.meshSize = ;
+		//chunkData.meshResolution = ;
+		chunkData.meshFilter = GetComponent<MeshFilter>();
+		chunkData.meshRenderer = GetComponent<MeshRenderer>();
+		chunkData.meshCollider = GetComponent<MeshCollider>();
+	}
 
     
     void Update()
