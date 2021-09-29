@@ -15,6 +15,7 @@ namespace Planet.Generation.Jobs
 	public struct VerticesAndUVsGenerationJob : IJobParallelFor
 	{
 		public FunctionPointer<BetterNormalizationHelper.BetterNormalizeDelegate> BetterNormalize;
+		public FunctionPointer<VertexGenerationHelper.GenerateVertexDelegate> GenerateVertex;
 
 		[WriteOnly] public NativeArray<float3> Vertices;
 		[WriteOnly] public NativeArray<float3> Normals;
@@ -36,21 +37,12 @@ namespace Planet.Generation.Jobs
 
 			float zPos = ((float)indexZ / (MeshResolution - 1) - .5f) * MeshSize;
 			float xPos = ((float)indexX / (MeshResolution - 1) - .5f) * MeshSize;
-			var sourceVertex = new float4(xPos, 0, zPos, 1.0f);
 
-			// Convert sourceVertex to a planetary space
-			float4 newVertex = math.mul(ChunkToPlanet, sourceVertex);
+			GenerateVertex.Invoke(out float3 vertexPos, BetterNormalize, xPos, zPos, ref ChunkToPlanet, ref PlanetToChunk,
+						ref RidgedNoise, Radius, DoubledInversedRadius);
 
-			//float noise = ValueDerivativeNoise.GetValueD(newVertex.xyz).x;
-			//float noise = SimplexNoise.GetValue(newVertex.xyz);
-			float noise = RidgedNoise.GetValue(newVertex.xyz);
-			//float noise = DomainWrapping(newVertex.xyz);
-
-			var vertexInversed = newVertex.xyz * DoubledInversedRadius;
-			BetterNormalize.Invoke(ref vertexInversed);
-			newVertex.xyz = vertexInversed * (noise + Radius);
-
-			Vertices[index] = math.mul(PlanetToChunk, newVertex).xyz;
+			Vertices[index] = vertexPos;
+			//Vertices[index] = math.mul(PlanetToChunk, newVertex).xyz;
 			UVs[index] = new float2((float)indexX / (MeshResolution - 1), (float)indexZ / (MeshResolution - 1));
 			Normals[index] = float3.zero;
 		}

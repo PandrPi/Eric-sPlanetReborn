@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Planet.Managers
 {
 	/// <summary>
-	/// Generates
+	/// Generates a chunk based on chunk data instance
 	/// </summary>
 	public class ChunkGenerator : System.IDisposable
 	{
@@ -16,7 +16,6 @@ namespace Planet.Managers
 		public NativeArray<float3> Vertices { get; private set; }
 		public NativeArray<float3> BoundaryVertices { get; private set; }
 		public NativeArray<int> BoundaryTriangles { get; private set; }
-		public NativeHashMap<int, int> GridIndexToActualIndex { get; private set; }
 		public NativeArray<float4> Colors { get; private set; }
 		public NativeArray<float3> Normals { get; private set; }
 		public NativeArray<float4> Tangents { get; private set; }
@@ -48,7 +47,6 @@ namespace Planet.Managers
 			Vertices = new NativeArray<float3>(verticesNumber, Allocator.Persistent);
 			BoundaryVertices = new NativeArray<float3>(boundaryVerticesNumber, Allocator.Persistent);
 			BoundaryTriangles = new NativeArray<int>(boundaryTrianglesNumber, Allocator.Persistent);
-			GridIndexToActualIndex = new NativeHashMap<int, int>(boundaryVerticesNumber, Allocator.Persistent);
 			Colors = new NativeArray<float4>(verticesNumber, Allocator.Persistent);
 			Normals = new NativeArray<float3>(verticesNumber, Allocator.Persistent);
 			Tangents = new NativeArray<float4>(verticesNumber, Allocator.Persistent);
@@ -92,33 +90,12 @@ namespace Planet.Managers
 			var chunkToPlanet = Helper.Matrix4x4ToFloat4x4(planetTRS.inverse * chunkTRS);
 			var planetToChunk = Helper.Matrix4x4ToFloat4x4(chunkTRS.inverse * planetTRS);
 
-			// TODO: Remove job32 initialization an d execution
-			var job32 = new BoundaryNormaIVectorsIssueSolverJob
-			{
-				BetterNormalize = BetterNormalizationHelper.BetterNormalizePointer,
-				Vertices = Vertices,
-				BoundaryVertices = BoundaryVertices,
-				BoundaryTriangles = BoundaryTriangles,
-				GridIndexToActualIndex = GridIndexToActualIndex,
-				Normals = Normals,
-				MeshResolution = meshResolution,
-				MeshSize = meshSize,
-				Radius = meshSize,
-				DoubledInversedRadius = doubledInversedRadius,
-				ChunkToPlanet = chunkToPlanet,
-				PlanetToChunk = planetToChunk,
-				ValueDerivativeNoise = ChunkGenerationManager.Instance.valueDerivativeNoise,
-				SimplexNoise = ChunkGenerationManager.Instance.simplexNoise,
-				RidgedNoise = ChunkGenerationManager.Instance.ridgedNoise,
-			};
-			job32.Execute();
-
-
 			// Schedule the jobs. All the jobs depends on each other so when the last job will be completed we can surely
 			// say that all the previous jobs will be completed too.
 			var job1 = new VerticesAndUVsGenerationJob()
 			{
 				BetterNormalize = BetterNormalizationHelper.BetterNormalizePointer,
+				GenerateVertex = VertexGenerationHelper.GenerateVertexPointer,
 				Vertices = Vertices,
 				Normals = Normals,
 				UVs = UVs,
@@ -151,10 +128,10 @@ namespace Planet.Managers
 			var job3 = new BoundaryNormaIVectorsIssueSolverJob
 			{
 				BetterNormalize = BetterNormalizationHelper.BetterNormalizePointer,
+				GenerateVertex = VertexGenerationHelper.GenerateVertexPointer,
 				Vertices = Vertices,
 				BoundaryVertices = BoundaryVertices,
 				BoundaryTriangles = BoundaryTriangles,
-				GridIndexToActualIndex = GridIndexToActualIndex,
 				Normals = Normals,
 				MeshResolution = meshResolution,
 				MeshSize = meshSize,
@@ -166,6 +143,7 @@ namespace Planet.Managers
 				SimplexNoise = ChunkGenerationManager.Instance.simplexNoise,
 				RidgedNoise = ChunkGenerationManager.Instance.ridgedNoise,
 			};
+			job3.Initialize();
 			var jobHandle3 = job3.Schedule(jobHandle2);
 
 			var job4 = new NormalsAndTangentsCalculationJob
@@ -214,14 +192,14 @@ namespace Planet.Managers
 			// Mark the generator as free
 			IsFree = true;
 		}
-		
+
 		// Releases all the allocated resources
 		public void Dispose()
 		{
 			// Release resources
 			Vertices.Dispose();
 			BoundaryVertices.Dispose();
-			GridIndexToActualIndex.Dispose();
+			BoundaryTriangles.Dispose();
 			Colors.Dispose();
 			Normals.Dispose();
 			Tangents.Dispose();

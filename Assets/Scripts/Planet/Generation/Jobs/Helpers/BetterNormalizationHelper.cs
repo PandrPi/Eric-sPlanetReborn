@@ -10,7 +10,7 @@ namespace Planet.Generation.Jobs.Helpers
 	[BurstCompile]
 	public static class BetterNormalizationHelper
 	{
-		public static FunctionPointer<BetterNormalizeDelegate> BetterNormalizePointer =
+		public static readonly FunctionPointer<BetterNormalizeDelegate> BetterNormalizePointer =
 			BurstCompiler.CompileFunctionPointer<BetterNormalizeDelegate>(BetterNormalize);
 
 

@@ -10,16 +10,16 @@ namespace Planet.Generation.Jobs
 	/// <summary>
 	/// Solves the issue with incorrect calculation of boundary normal vectors
 	/// </summary>
-	//[BurstCompile]
+	[BurstCompile]
 	struct BoundaryNormaIVectorsIssueSolverJob : IJob
 	{
 		public FunctionPointer<BetterNormalizationHelper.BetterNormalizeDelegate> BetterNormalize;
+		public FunctionPointer<VertexGenerationHelper.GenerateVertexDelegate> GenerateVertex;
 
 		public NativeArray<float3> Vertices;
 		public NativeArray<float3> BoundaryVertices;
 		public NativeArray<int> BoundaryTriangles;
 		public NativeArray<float3> Normals;
-		public NativeHashMap<int, int> GridIndexToActualIndex;
 
 		[ReadOnly] public float4x4 ChunkToPlanet;
 		[ReadOnly] public float4x4 PlanetToChunk;
@@ -31,99 +31,174 @@ namespace Planet.Generation.Jobs
 		[ReadOnly] public SimplexNoise SimplexNoise;
 		[ReadOnly] public RidgedNoise RidgedNoise;
 
-		private const float eps = 0.0005f;
-		private static readonly float2 e = new float2(1.0f, -1.0f) * eps;
+		private int borderTriangleIndex;
+		private int verticesLength;
+		private int borderMeshResolution;
+		int boundaryTrianglesLength;
+		private float distanceBetweenTwoVertices;
+		private float borderMeshSize;
+
+		/// <summary>
+		/// Initializes the additional variables needed for solving the normals issue
+		/// </summary>
+		public void Initialize()
+		{
+			borderTriangleIndex = 0;
+
+			verticesLength = MeshResolution * MeshResolution;
+			borderMeshResolution = MeshResolution + 2;
+			boundaryTrianglesLength = MeshResolution * 24;
+			distanceBetweenTwoVertices = MeshSize / (MeshResolution - 1.0f);
+			borderMeshSize = MeshSize + distanceBetweenTwoVertices * 2.0f;
+		}
 
 		public void Execute()
 		{
-			int verticesLength = MeshResolution * MeshResolution;
-			int borderResolution = MeshResolution + 2;
-			int borderResolutionSqr = borderResolution * borderResolution;
-			int boundaryVerticesLength = MeshResolution * 4 + 4;
-
-			float distanceBetweenTwoVertices = MeshSize / (MeshResolution - 1.0f);
-			float borderMeshSize = MeshSize + distanceBetweenTwoVertices * 2.0f;
-
-			int borderVertexIndex = -1;
-			for (int z = 0; z < borderResolution; z++)
+			// Generate boundary vertices position
+			for (int z = 0; z < borderMeshResolution; z++)
 			{
-				float zPos = ((float)z / (borderResolution - 1) - .5f) * borderMeshSize;
-				for (int x = 0; x < borderResolution; x++)
+				float zPos = ((float)z / (borderMeshResolution - 1) - .5f) * borderMeshSize;
+				for (int x = 0; x < borderMeshResolution; x++)
 				{
-					if (IsBorderVertex(x, z, borderResolution) == true)
+					// We want to process only border positions
+					if (IsBorderVertex(x, z) == false) continue;
+
+					// Calculate border vertex position
+					float xPos = ((float)x / (borderMeshResolution - 1) - .5f) * borderMeshSize;
+					int vertexIndex = GetActualBorderVertexIndexByXZ(x, z);
+					GenerateVertex.Invoke(out float3 vertexPos, BetterNormalize, xPos, zPos, ref ChunkToPlanet,
+						ref PlanetToChunk, ref RidgedNoise, Radius, DoubledInversedRadius);
+					BoundaryVertices[vertexIndex] = vertexPos;
+
+					// Add border triangles
+					if (x < borderMeshResolution - 1 && z < borderMeshResolution - 1)
 					{
-						// Process only boundary vertices here
-
-						float xPos = ((float)x / (borderResolution - 1) - .5f) * borderMeshSize;
-
-						
-						int gridIndex = x + z * borderResolution;
-						GridIndexToActualIndex[gridIndex] = borderVertexIndex;
-						AddVertex(GenerateVertex(xPos, zPos), borderVertexIndex);
-
-						borderVertexIndex--;
+						AddTriangles(x, z);
+					}
+					if (x - 1 > 0 && z - 1 > 0)
+					{
+						int newX = x - 1;
+						int newZ = z - 1;
+						AddTriangles(newX, newZ);
 					}
 				}
 			}
 
-			for (int z = 0; z < borderResolution; z++)
+			// Calculate normal vectors
+			for (int i = 0; i < boundaryTrianglesLength / 3; i++)
 			{
-				for (int x = 0; x < borderResolution; x++)
-				{
-					if (IsBorderVertex(x, z, borderResolution) == true)
-					{
-						// Process only boundary vertices here
+				int normalTriangleIndex = i * 3;
+				int vertexIndexA = BoundaryTriangles[normalTriangleIndex + 0];
+				int vertexIndexB = BoundaryTriangles[normalTriangleIndex + 1];
+				int vertexIndexC = BoundaryTriangles[normalTriangleIndex + 2];
 
-						int gridIndex = x + z * MeshResolution;
-						float3 normal = new float3();
+				// We do not need to calculate normals if the current triangle consists only from boundary vertices
+				if (vertexIndexA >= verticesLength && vertexIndexB >= verticesLength && vertexIndexC >= verticesLength) continue;
 
-						if (x == 0)
-						{
+				float3 vertexA = GetVertex(vertexIndexA);
+				float3 vertexB = GetVertex(vertexIndexB);
+				float3 vertexC = GetVertex(vertexIndexC);
 
-						}
-					}
+				float3 triangleNormal = CalculateNormal(vertexA, vertexB, vertexC);
 
-				}
+				if (vertexIndexA < verticesLength) Normals[vertexIndexA] += triangleNormal;
+				if (vertexIndexB < verticesLength) Normals[vertexIndexB] += triangleNormal;
+				if (vertexIndexC < verticesLength) Normals[vertexIndexC] += triangleNormal;
 			}
 		}
 
-		private bool IsBorderVertex(int x, int z, int meshResolution)
+		/// <summary>
+		/// Returns True if the specified two-dimentional vertex index belongs to an boundary vertex
+		/// </summary>
+		/// <param name="x">X position</param>
+		/// <param name="z">Z position</param>
+		private bool IsBorderVertex(int x, int z)
 		{
-			return z == 0 || z == meshResolution - 1 || x == 0 || x == meshResolution - 1;
+			return z == 0 || z == borderMeshResolution - 1 || x == 0 || x == borderMeshResolution - 1;
 		}
 
-		private float3 GenerateVertex(float xPos, float zPos)
+		/// <summary>
+		/// Returns a position vector of a usual vertex if the specified vertexIndex is smaller than total number of 
+		/// usual vertices and a position vector of a boundary vertex otherwise
+		/// </summary>
+		/// <param name="vertexIndex">The index of the vertex to return</param>
+		private float3 GetVertex(int vertexIndex)
 		{
-			var boundarySourceVertex = new float4(xPos, 0, zPos, 1.0f);
-			float4 newVertex = math.mul(ChunkToPlanet, boundarySourceVertex);
-
-			float noise = RidgedNoise.GetValue(newVertex.xyz);
-			var vertexInversed = newVertex.xyz * DoubledInversedRadius;
-			BetterNormalize.Invoke(ref vertexInversed);
-			newVertex.xyz = vertexInversed * (noise + Radius);
-
-			return math.mul(PlanetToChunk, newVertex).xyz;
-		}
-
-		private void AddVertex(float3 vertexPosition, int vertexIndex)
-		{
-			if (vertexIndex < 0)
+			if (vertexIndex < verticesLength)
 			{
-				BoundaryVertices[-vertexIndex - 1] = vertexPosition;
+				return Vertices[vertexIndex];
+			}
+			else
+			{
+				return BoundaryVertices[vertexIndex - verticesLength];
 			}
 		}
 
-		private float3 GetVertexByXZ(int x, int z)
+		private void AddTriangle(int a, int b, int c)
 		{
-			int resultX = 0, resultZ = 0;
-			if (x < 0)
-			{
-
-			}
-
-			return x + z * MeshResolution;
+			BoundaryTriangles[borderTriangleIndex] = a;
+			BoundaryTriangles[borderTriangleIndex + 1] = b;
+			BoundaryTriangles[borderTriangleIndex + 2] = c;
+			borderTriangleIndex += 3;
 		}
 
+		private void AddTriangles(int x, int z)
+		{
+			int a = GetGridIndexByXZ(x, z);
+			int b = GetGridIndexByXZ(x, z + 1);
+			int c = GetGridIndexByXZ(x + 1, z);
+			int d = GetGridIndexByXZ(x + 1, z + 1);
+			AddTriangle(b, c, a);
+			AddTriangle(b, d, c);
+		}
+
+		/// <summary>
+		/// Calculates the index based on x + z * resolution formula
+		/// </summary>
+		private int GetGridIndexByXZ(int x, int z)
+		{
+			if (IsBorderVertex(x, z) == true)
+			{
+				return GetActualBorderVertexIndexByXZ(x, z) + verticesLength;
+			}
+			else
+			{
+				return (x - 1) + (z - 1) * MeshResolution;
+			}
+		}
+
+		/// <summary>
+		/// Converts the specified two-dimentional vertex index to an actual one-dimentional index for its further usage
+		/// with 
+		/// </summary>
+		/// <param name="x">X position</param>
+		/// <param name="z">Z position</param>
+		/// <returns></returns>
+		private int GetActualBorderVertexIndexByXZ(int x, int z)
+		{
+			if (z == 0)
+			{
+				return x;
+			}
+			else if (z == borderMeshResolution - 1)
+			{
+				int index = borderMeshResolution + (z - 1) * 2;
+				index += x;
+
+				return index;
+			}
+			else
+			{
+				int index = borderMeshResolution + (z - 1) * 2;
+				index += x == 0 ? 0 : 1;
+
+				return index;
+			}
+		}
+
+		/// <summary>
+		/// Calculates a normal vector from the specified points
+		/// </summary>
 		private float3 CalculateNormal(float3 v1, float3 v2, float3 v3)
 		{
 			// Calculate triangle edges
