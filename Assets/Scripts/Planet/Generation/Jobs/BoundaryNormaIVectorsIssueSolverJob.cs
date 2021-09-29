@@ -34,7 +34,7 @@ namespace Planet.Generation.Jobs
 		private int borderTriangleIndex;
 		private int verticesLength;
 		private int borderMeshResolution;
-		int boundaryTrianglesLength;
+		private int boundaryTrianglesLength;
 		private float distanceBetweenTwoVertices;
 		private float borderMeshSize;
 
@@ -133,7 +133,9 @@ namespace Planet.Generation.Jobs
 				return BoundaryVertices[vertexIndex - verticesLength];
 			}
 		}
-
+		/// <summary>
+		/// Adds a single triangle based on the specified a, b and c vertex indices
+		/// </summary>
 		private void AddTriangle(int a, int b, int c)
 		{
 			BoundaryTriangles[borderTriangleIndex] = a;
@@ -142,6 +144,11 @@ namespace Planet.Generation.Jobs
 			borderTriangleIndex += 3;
 		}
 
+		/// <summary>
+		/// Adds two triangles for a border mesh fragment based on the specified x and z parameters
+		/// </summary>
+		/// <param name="x">The X position</param>
+		/// <param name="z">The Z position</param>
 		private void AddTriangles(int x, int z)
 		{
 			int a = GetGridIndexByXZ(x, z);
