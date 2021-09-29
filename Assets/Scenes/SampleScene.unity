@@ -171,7 +171,7 @@ MonoBehaviour:
     mesh: {fileID: 0}
     chunkTRS: {fileID: 230897468}
     meshSize: 100
-    meshResolution: 150
+    meshResolution: 6
     meshFilter: {fileID: 230897472}
     meshRenderer: {fileID: 230897471}
     meshCollider: {fileID: 230897470}
@@ -347,7 +347,7 @@ MonoBehaviour:
     mesh: {fileID: 0}
     chunkTRS: {fileID: 312659336}
     meshSize: 100
-    meshResolution: 150
+    meshResolution: 6
     meshFilter: {fileID: 312659335}
     meshRenderer: {fileID: 312659334}
     meshCollider: {fileID: 312659333}
@@ -401,7 +401,7 @@ MonoBehaviour:
     mesh: {fileID: 0}
     chunkTRS: {fileID: 672388943}
     meshSize: 100
-    meshResolution: 150
+    meshResolution: 6
     meshFilter: {fileID: 672388947}
     meshRenderer: {fileID: 672388946}
     meshCollider: {fileID: 672388945}
@@ -577,7 +577,7 @@ MonoBehaviour:
     mesh: {fileID: 0}
     chunkTRS: {fileID: 700607367}
     meshSize: 100
-    meshResolution: 150
+    meshResolution: 6
     meshFilter: {fileID: 700607366}
     meshRenderer: {fileID: 700607365}
     meshCollider: {fileID: 700607364}
@@ -610,8 +610,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 482c0502fad198643a6156a430a88ccb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxChunkMeshResolution: 200
+  maxChunkMeshResolution: 250
   completeImmediately: 0
+  chunksInQueue: 0
   valueDerivativeNoise:
     Octaves: 6
     Frequency: 0.04
@@ -869,7 +870,7 @@ MonoBehaviour:
     mesh: {fileID: 0}
     chunkTRS: {fileID: 1633143822}
     meshSize: 100
-    meshResolution: 150
+    meshResolution: 6
     meshFilter: {fileID: 1633143826}
     meshRenderer: {fileID: 1633143825}
     meshCollider: {fileID: 1633143824}
@@ -1020,7 +1021,7 @@ MonoBehaviour:
     mesh: {fileID: 0}
     chunkTRS: {fileID: 2119930466}
     meshSize: 100
-    meshResolution: 150
+    meshResolution: 6
     meshFilter: {fileID: 2119930470}
     meshRenderer: {fileID: 2119930469}
     meshCollider: {fileID: 2119930468}

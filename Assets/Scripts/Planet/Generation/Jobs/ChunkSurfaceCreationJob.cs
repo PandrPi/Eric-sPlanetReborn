@@ -15,7 +15,6 @@ namespace Planet.Generation.Jobs
 	{
 		[NativeDisableParallelForRestriction] [ReadOnly] public NativeArray<float3> Vertices;
 		[NativeDisableParallelForRestriction] [ReadOnly] public NativeArray<float2> UVs;
-		[NativeDisableParallelForRestriction] public NativeArray<int> MatchCounter;
 		[NativeDisableParallelForRestriction] public NativeArray<float3> Normals;
 		[NativeDisableParallelForRestriction] public NativeArray<int> Triangles;
 		[NativeDisableParallelForRestriction] public NativeArray<float3> Tan1;
@@ -63,11 +62,6 @@ namespace Planet.Generation.Jobs
 			Normals[i0] += normal;
 			Normals[i1] += normal;
 			Normals[i2] += normal;
-
-			// Store numbers that represent how many times an exact vertex is part of a face
-			MatchCounter[i0] += 1;
-			MatchCounter[i1] += 1;
-			MatchCounter[i2] += 1;
 
 			// Read UV vectors
 			float2 w1 = UVs[i0];

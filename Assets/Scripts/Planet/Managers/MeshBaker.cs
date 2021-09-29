@@ -3,6 +3,9 @@ using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 
+/// <summary>
+/// Bakes MeshCollider instances' physics inside the job
+/// </summary>
 public static class MeshBaker
 {
 

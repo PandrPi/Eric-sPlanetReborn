@@ -1,4 +1,5 @@
-﻿using Planet.Noises;
+﻿using Planet.Generation.Jobs.Helpers;
+using Planet.Noises;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -13,6 +14,8 @@ namespace Planet.Generation.Jobs
 	[BurstCompile]
 	public struct VerticesAndUVsGenerationJob : IJobParallelFor
 	{
+		public FunctionPointer<BetterNormalizationHelper.BetterNormalizeDelegate> BetterNormalize;
+
 		[WriteOnly] public NativeArray<float3> Vertices;
 		[WriteOnly] public NativeArray<float3> Normals;
 		[WriteOnly] public NativeArray<float2> UVs;
@@ -43,8 +46,9 @@ namespace Planet.Generation.Jobs
 			float noise = RidgedNoise.GetValue(newVertex.xyz);
 			//float noise = DomainWrapping(newVertex.xyz);
 
-			//newVertex = math.mul(PlanetToChunk, math.normalize(newVertex) * (noise + radius));
-			newVertex.xyz = CustomNormalize(newVertex.xyz * DoubledInversedRadius) * (noise + Radius);
+			var vertexInversed = newVertex.xyz * DoubledInversedRadius;
+			BetterNormalize.Invoke(ref vertexInversed);
+			newVertex.xyz = vertexInversed * (noise + Radius);
 
 			Vertices[index] = math.mul(PlanetToChunk, newVertex).xyz;
 			UVs[index] = new float2((float)indexX / (MeshResolution - 1), (float)indexZ / (MeshResolution - 1));
@@ -64,24 +68,6 @@ namespace Planet.Generation.Jobs
 				RidgedNoise.GetValue(p + 4.0f * q + new float3(8.3f, 2.8f, 5.7f)));
 
 			return RidgedNoise.GetValue(p + 4.0f * r);
-		}
-
-		/// <summary>
-		/// Does a more uniform vector normalization
-		/// </summary>
-		/// <param name="v">The vector for normalization</param>
-		/// <returns>The normalized float3 vector</returns>
-		private float3 CustomNormalize(float3 v)
-		{
-			const float inverseTwo = 1.0f / 2.0f;
-			const float inverseThree = 1.0f / 3.0f;
-			float3 v2 = v * v;
-			float3 s = new float3(
-				math.sqrt(1f - (v2.y * inverseTwo) - (v2.z * inverseTwo) + (v2.y * v2.z * inverseThree)),
-				math.sqrt(1f - (v2.x * inverseTwo) - (v2.z * inverseTwo) + (v2.x * v2.z * inverseThree)),
-				math.sqrt(1f - (v2.x * inverseTwo) - (v2.y * inverseTwo) + (v2.x * v2.y * inverseThree)));
-
-			return s * v;
 		}
 	}
 }

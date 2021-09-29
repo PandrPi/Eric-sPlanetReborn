@@ -1,28 +1,55 @@
-﻿using UnityEngine;
+﻿using Planet.Managers;
+using UnityEngine;
 
-public class Chunk : MonoBehaviour
+namespace Planet.Chunks
 {
-	[SerializeField] private ChunkData chunkData;
-
-    void Start()
-    {
-		InitializeChunkData();
-    }
-
-	private void InitializeChunkData()
+	/// <summary>
+	/// Represents a QuadTree node of a planet
+	/// </summary>
+	public class Chunk : MonoBehaviour, IQuadTreeNode
 	{
-		chunkData.mesh = new Mesh();
-		chunkData.chunkTRS = transform;
-		//chunkData.meshSize = ;
-		//chunkData.meshResolution = ;
-		chunkData.meshFilter = GetComponent<MeshFilter>();
-		chunkData.meshRenderer = GetComponent<MeshRenderer>();
-		chunkData.meshCollider = GetComponent<MeshCollider>();
-	}
+		[SerializeField] private ChunkData chunkData;
 
-    
-    void Update()
-    {
-		if (Input.GetKeyDown(KeyCode.E)) ChunkGenerationPool.Instance.AddToQueue(chunkData);
+		void Start()
+		{
+			InitializeChunkData();
+		}
+
+		private void InitializeChunkData()
+		{
+			chunkData.mesh = new Mesh();
+			chunkData.chunkTRS = transform;
+			//chunkData.meshSize = ;
+			//chunkData.meshResolution = ;
+			chunkData.meshFilter = GetComponent<MeshFilter>();
+			chunkData.meshRenderer = GetComponent<MeshRenderer>();
+			chunkData.meshCollider = GetComponent<MeshCollider>();
+		}
+
+
+		void Update()
+		{
+			if (Input.GetKeyDown(KeyCode.E)) ChunkGenerationManager.Instance.AddToQueue(chunkData);
+		}
+
+		public IQuadTreeNode GetParent()
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public IQuadTreeNode[] GetChildren()
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public void Divide()
+		{
+			throw new System.NotImplementedException();
+		}
+
+		public void Initialize()
+		{
+			throw new System.NotImplementedException();
+		}
 	}
 }

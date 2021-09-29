@@ -12,18 +12,14 @@ namespace Planet.Generation.Jobs
 	public struct NormalsAndTangentsCalculationJob : IJobParallelFor
 	{
 		[WriteOnly] public NativeArray<float4> Tangents;
-		[ReadOnly] public NativeArray<int> MatchCounter;
 		[ReadOnly] public NativeArray<float3> Tan1;
 		[ReadOnly] public NativeArray<float3> Tan2;
 		public NativeArray<float3> Normals;
 
 		public void Execute(int index)
 		{
-			// Read the specific counter value, there is no situation when it could be equal to zero
-			int counter = MatchCounter[index];
-			// If we only normalize the normals without averaging (by dividing them by the counter), 
-			// then our calculations may not be as accurate as we would like.
-			float3 n = math.normalize(Normals[index] / (float)counter);
+			// Normalize the normal vector
+			float3 n = math.normalize(Normals[index]);
 			float3 t = Tan1[index];
 
 

@@ -8,7 +8,7 @@ using UnityEngine.Serialization;
 namespace Planet.Noises
 {
 	[Serializable]
-	public struct ValueDerivativeNoise : IGenerationNoise
+	public struct ValueDerivativeNoise
 	{
 		[SerializeField] public int Octaves;
 		[SerializeField] public float Frequency;
@@ -107,17 +107,5 @@ namespace Planet.Noises
 			}
 			return new float4(a * amplitude, d);
 		}
-
-		[Obsolete("This method is not implemented for this type of noise. Use GetValueD method instead.", false)]
-		public float GetValue(float3 x)
-		{
-			return 0.0f;
-		}
-
-		//[Obsolete("This method is not implemented for this type of noise. Use NoiseFBMD method instead.", false)]
-		//public float NoiseFBM(float3 x, int octaves, float frequency, float amplitude, float lacunarity, float gain)
-		//{
-		//	return 0.0f;
-		//}
 	}
 }
