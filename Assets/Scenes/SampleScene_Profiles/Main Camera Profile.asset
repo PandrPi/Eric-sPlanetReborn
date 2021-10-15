@@ -107,30 +107,48 @@ MonoBehaviour:
   enabled:
     overrideState: 1
     value: 1
-  AtmosphereRadius:
+  AtmosphereScale:
     overrideState: 1
-    value: 221
+    value: 0.4
   PlanetRadius:
     overrideState: 1
-    value: 50
+    value: 100
   DensityFalloff:
     overrideState: 1
-    value: 10.4
+    value: 3
   InScatteringPoints:
     overrideState: 1
     value: 10
   OpticalDepthPoints:
     overrideState: 1
-    value: 10
+    value: 100
+  ScatteringStrength:
+    overrideState: 1
+    value: 16.51
+  Intensity:
+    overrideState: 1
+    value: 0.06
+  DitherStrength:
+    overrideState: 1
+    value: 6
+  DitherScale:
+    overrideState: 1
+    value: 6
+  OpticalDepthTextureSize:
+    overrideState: 1
+    value: 256
   PlanetCenter:
     overrideState: 1
     value: {x: 0, y: 0, z: 0}
+  WaveLengths:
+    overrideState: 1
+    value: {x: 760, y: 530, z: 440}
   Test1:
     overrideState: 1
-    value: 0.43
+    value: 1.1
   Test2:
     overrideState: 1
-    value: 138.04
+    value: 980.69
   Test3:
     overrideState: 1
     value: 1
@@ -149,7 +167,6 @@ MonoBehaviour:
   settings:
   - {fileID: -7396416377436467626}
   - {fileID: -7359285005049743999}
-  - {fileID: -1384785068548400798}
 --- !u!114 &6773860125738132339
 MonoBehaviour:
   m_ObjectHideFlags: 3
