@@ -18,8 +18,6 @@ namespace Planet.Managers
 		[SerializeField] public ValueDerivativeNoise valueDerivativeNoise;
 		[SerializeField] public SimplexNoise simplexNoise;
 		[SerializeField] public RidgedNoise ridgedNoise;
-		// TODO: Remove the next variable
-		[SerializeField] public Texture2D SomeTexture;
 
 		private ChunkGenerator chunkGenerator;
 		private ChunkData currentChunkData;

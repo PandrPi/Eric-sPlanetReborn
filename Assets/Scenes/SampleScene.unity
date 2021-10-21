@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 5aa8a01e0e03d98469b211bf16b63cf8, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 1538313553}
-  m_IndirectSpecularColor: {r: 0.37311554, g: 0.38073823, b: 0.3587338, a: 1}
+  m_IndirectSpecularColor: {r: 0.28981665, g: 0.24868658, b: 0.54406375, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -802,7 +802,6 @@ MonoBehaviour:
     Amplitude: 10
     Lacunarity: 2.5
     Gain: 0.5
-  SomeTexture: {fileID: 0}
 --- !u!4 &1115670193
 Transform:
   m_ObjectHideFlags: 0
@@ -1200,6 +1199,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1668970551}
+  - component: {fileID: 1668970552}
   m_Layer: 0
   m_Name: Planet
   m_TagString: Untagged
@@ -1223,6 +1223,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1668970552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668970550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c1e882f06f7d75448a74299a9e3794b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  atmosphereMaterial: {fileID: 2100000, guid: ab0f03901003ff946b6ec4bd61173f01, type: 2}
+  planetMaterial: {fileID: 2100000, guid: 822368ff1aa62be4ba78393e0011848c, type: 2}
+  fogDensity: 0.021459663
+  maxFogDistance: 100
 --- !u!1 &1742828165
 GameObject:
   m_ObjectHideFlags: 0

@@ -66,8 +66,8 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FogMultiplier: 0.44
-    - _FresnelExponent: 4
+    - _FogMultiplier: 0
+    - _FresnelExponent: 0.85
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1

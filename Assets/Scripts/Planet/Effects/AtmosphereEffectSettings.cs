@@ -174,8 +174,5 @@ public sealed class AtmosphereEffectRenderer : PostProcessEffectRenderer<Atmosph
 		jobHandle.Complete();
 
 		_opticalDepthTexture.Apply(false);
-
-		if (Application.isPlaying == true)
-			ChunkGenerationManager.Instance.SomeTexture = _opticalDepthTexture;
 	}
 }
