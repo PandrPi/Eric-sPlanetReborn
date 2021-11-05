@@ -107,51 +107,30 @@ MonoBehaviour:
   enabled:
     overrideState: 1
     value: 1
-  AtmosphereScale:
-    overrideState: 1
-    value: 0.4
+  AtmosphereRadius:
+    overrideState: 0
+    value: 100
   PlanetRadius:
     overrideState: 1
     value: 100
-  DensityFalloff:
-    overrideState: 1
-    value: 3
-  InScatteringPoints:
-    overrideState: 1
-    value: 10
-  OpticalDepthPoints:
-    overrideState: 1
-    value: 100
-  ScatteringStrength:
-    overrideState: 1
-    value: 16.51
-  Intensity:
-    overrideState: 1
-    value: 0.06
-  DitherStrength:
-    overrideState: 1
-    value: 6
-  DitherScale:
-    overrideState: 1
-    value: 6
-  OpticalDepthTextureSize:
-    overrideState: 1
-    value: 256
+  DensityScale:
+    overrideState: 0
+    value: 4
+  AtmosphereIntensity:
+    overrideState: 0
+    value: 0.6
+  InScatteringPointsNum:
+    overrideState: 0
+    value: 8
+  OutScatteringPointsNum:
+    overrideState: 0
+    value: 8
   PlanetCenter:
     overrideState: 1
     value: {x: 0, y: 0, z: 0}
-  WaveLengths:
-    overrideState: 1
-    value: {x: 760, y: 530, z: 440}
-  Test1:
-    overrideState: 1
-    value: 1.1
-  Test2:
-    overrideState: 1
-    value: 980.69
-  Test3:
-    overrideState: 1
-    value: 1
+  ScatteringCoefficients:
+    overrideState: 0
+    value: {x: 0.3, y: 0.7, z: 1}
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,6 +146,7 @@ MonoBehaviour:
   settings:
   - {fileID: -7396416377436467626}
   - {fileID: -7359285005049743999}
+  - {fileID: 7350964079634155387}
 --- !u!114 &6773860125738132339
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -211,3 +191,43 @@ MonoBehaviour:
   PlanetCenter:
     overrideState: 0
     value: {x: 0, y: 0, z: 0}
+--- !u!114 &7350964079634155387
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15c9e48f8789cb54c8087d52a1d82eac, type: 3}
+  m_Name: AtmosphereEffectSettings
+  m_EditorClassIdentifier: 
+  active: 1
+  enabled:
+    overrideState: 1
+    value: 1
+  AtmosphereRadius:
+    overrideState: 1
+    value: 3000
+  PlanetRadius:
+    overrideState: 1
+    value: 2000
+  DensityScale:
+    overrideState: 1
+    value: 4
+  AtmosphereIntensity:
+    overrideState: 1
+    value: 1
+  InScatteringPointsNum:
+    overrideState: 1
+    value: 10
+  OutScatteringPointsNum:
+    overrideState: 1
+    value: 10
+  PlanetCenter:
+    overrideState: 1
+    value: {x: 0, y: 0, z: 0}
+  ScatteringCoefficients:
+    overrideState: 1
+    value: {x: 0.3, y: 0.7, z: 1}

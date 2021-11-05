@@ -76,11 +76,16 @@ Shader "Custom/AtmosphereLow"
 				float3 cameraToWorldPosDir = normalize(worldCamPosition - o.worldPos);
 
 				// Calculate all the needed variables for the atmosphereFactor calculation
-				float planetaryFogAttenuation = CalculatePlanetaryFogAttenuation(o.worldNormal);
+				/*float planetaryFogAttenuation = 1.0 - CalculatePlanetaryFogAttenuationNew(o.worldPos, _PlanetCenter,
+					_PlanetRadius, _AtmosphereRadius, false);*/
+				float planetaryFogAttenuation = CalculatePlanetShadowValueForAtmosphere(o.worldPos, _PlanetCenter,
+					_PlanetRadius, _AtmosphereRadius);
 				float fogFactor = CalculatePlanetaryFogFactor(o.worldPos, _PlanetCenter, _AtmosphereRadius, _FogParam);
 				float fresnel = CalculateFresnelEffect(o.worldNormal, cameraToWorldPosDir);
 
 				// Calculate atmosphere factor
+				//o.atmosphereFactor = fresnel * fogFactor;
+				//o.atmosphereFactor = planetaryFogAttenuation;
 				o.atmosphereFactor = fresnel * fogFactor * planetaryFogAttenuation;
 
 				return o;

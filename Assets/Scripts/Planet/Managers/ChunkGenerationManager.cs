@@ -11,6 +11,8 @@ namespace Planet.Managers
 	public class ChunkGenerationManager : MonoBehaviour
 	{
 		public static ChunkGenerationManager Instance { get; private set; }
+		// TODO: Remove _opticalDepthTexture field
+		public Texture2D opticalDepthTexture;
 
 		[SerializeField, Range(2, MaxMeshResolution)] private int maxChunkMeshResolution;
 		[SerializeField] private bool completeImmediately;

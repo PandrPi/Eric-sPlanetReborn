@@ -8,7 +8,7 @@ Shader "Custom/SimplePlanetShader"
         _Metallic ("Metallic", Range(0,1)) = 0.0
 		_FogColor ("Fog Color (RGB)", Color) = (0.5, 0.5, 0.5, 1.0)
 
-		_AtmospherePower("Atmophere power", Float) = 0
+		_AtmospherePower("Atmophere power", Range(0.5, 10)) = 0
 		_AtmosphereRadius("Atmophere radius", Float) = 0
 		_PlanetRadius("Planet radius", Float) = 0
 		_PlanetCenter("Planet center", Vector) = (0, 0, 0, 0)
@@ -28,7 +28,7 @@ Shader "Custom/SimplePlanetShader"
 
 		// Use shader model 3.0 target, to get nicer looking lighting
         #pragma target 3.0
-		#pragma debug
+		//#pragma debug
 
 		sampler2D _MainTex;
 
@@ -36,13 +36,13 @@ Shader "Custom/SimplePlanetShader"
         half _Metallic;
         fixed4 _Color;
 
-		float _FogParam;
-		float4 _FogColor;
+		float _FogParam;			// Determines the density of the atmosphere based on the distance to the camera
+		float4 _FogColor;			// The color of the atnosphere
 
-		float _AtmospherePower;
-		float _AtmosphereRadius;
-		float _PlanetRadius;
-		float3 _PlanetCenter;
+		float _AtmospherePower;		// How much the atmosphere attenuates with increasing altitude of the fragments
+		float _AtmosphereRadius;	// The radius of the atmosphere
+		float _PlanetRadius;		// The radius of the planet
+		float3 _PlanetCenter;		// The origin vector of the planet
 
 		struct Input {
 			float2 uv_MainTex;
@@ -55,12 +55,21 @@ Shader "Custom/SimplePlanetShader"
 			o.uv_MainTex = v.texcoord.xy;
 			
 			o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+			float3 worldNormal = normalize(_PlanetCenter - o.worldPos);
+			float3 worldPosOnSphere = _PlanetCenter + normalize(o.worldPos - _PlanetCenter) * _PlanetRadius;
 			
 			float vertexHeightAboveSurface = distance(_PlanetCenter, o.worldPos) - _PlanetRadius;
 			float vertexHeight01 = 1.0 - saturate(vertexHeightAboveSurface / (_AtmosphereRadius - _PlanetRadius));
-			//vertexHeight01 = smoothstep(0, 1, vertexHeight01);
-			vertexHeight01 = pow(vertexHeight01, _AtmospherePower);
-			o.fogFactor = CalculatePlanetaryFogFactor(o.worldPos, _PlanetCenter, _AtmosphereRadius, _FogParam) * vertexHeight01;
+			vertexHeight01 = pow(smoothstep(0, 1, vertexHeight01), _AtmospherePower);
+			o.fogFactor = CalculatePlanetaryFogFactor(o.worldPos, _PlanetCenter, _AtmosphereRadius, _FogParam);
+			o.fogFactor *= vertexHeight01;
+			////o.fogFactor = saturate(o.fogFactor - vertexHeight01 * saturate(1.0 - o.fogFactor));
+
+			// Apply planetary attenuation to the fogFactor
+			//o.fogFactor *= CalculatePlanetaryFogAttenuation(worldNormal);
+			o.fogFactor *= CalculatePlanetShadowValueForAtmosphere(o.worldPos, _PlanetCenter, _PlanetRadius, _PlanetRadius);
+			// TODO: Replace = with *= for the next line of code
+			//o.fogFactor = CalculatePlanetaryFogAttenuationNew(worldPosOnSphere, _PlanetCenter, _PlanetRadius, _AtmosphereRadius, true);
 		}
 
 		void surf(Input IN, inout SurfaceOutputStandard o) 
